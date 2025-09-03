@@ -3,8 +3,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load your data
-females_non_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-males_non_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+females_non_depressed = pd.read_csv("/Users/raemarshall/Desktop/initial Thesis Code/Thesis/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
+males_non_depressed = pd.read_csv("/Users/raemarshall/Desktop/initial Thesis Code/Thesis/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
 
 # Define columns
 participant_col = 'Participant_ID'
