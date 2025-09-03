@@ -1,10 +1,17 @@
+import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+females_file = os.path.join(script_dir, "non_depressed_females.csv")
+males_file = os.path.join(script_dir, "non_depressed_males.csv")
+
 # Load your data
-females_non_depressed = pd.read_csv("/Users/raemarshall/Desktop/initial Thesis Code/Thesis/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-males_non_depressed = pd.read_csv("/Users/raemarshall/Desktop/initial Thesis Code/Thesis/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+females_non_depressed = pd.read_csv(females_file)
+males_non_depressed = pd.read_csv(males_file)
 
 # Define columns
 participant_col = 'Participant_ID'
