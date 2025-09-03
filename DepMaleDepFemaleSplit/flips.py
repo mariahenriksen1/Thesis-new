@@ -1,9 +1,14 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+females = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
+males   = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
 
 au_c_cols = [col for col in females.columns if col.endswith('_c')]
 

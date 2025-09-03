@@ -1,8 +1,13 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-depressed_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+depressed_females = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
+depressed_males   = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
 
 au_cols = ['AU06_r', 'AU10_r']
 
