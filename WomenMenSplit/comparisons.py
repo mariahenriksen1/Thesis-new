@@ -1,8 +1,20 @@
+import os
 import pandas as pd
 
-# Assuming your data is already loaded in female_data and male_data
-female_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/female_participants.csv")
-male_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/male_participants.csv")
+# # Assuming your data is already loaded in female_data and male_data
+# female_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/female_participants.csv")
+# male_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/male_participants.csv")
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+female_file = os.path.join(script_dir, "female_participants.csv")
+male_file = os.path.join(script_dir, "male_participants.csv")
+
+# Load your data
+female_data = pd.read_csv(female_file)
+male_data = pd.read_csv(male_file)
 
 au_columns = [col for col in female_data.columns if col.endswith('_r')]
 
