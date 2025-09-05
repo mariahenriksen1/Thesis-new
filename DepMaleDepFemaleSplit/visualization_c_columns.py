@@ -11,9 +11,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 females_depressed = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
 males_depressed = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
 
-#females_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-#males_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
-
 participant_col = 'Participant_ID'
 au_columns_c = [col for col in females_depressed.columns if col.endswith('_c')]
 
