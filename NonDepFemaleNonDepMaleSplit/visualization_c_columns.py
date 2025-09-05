@@ -1,10 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load data
-females_non_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-males_non_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+females_non_depressed = pd.read_csv(os.path.join(script_dir, "non_depressed_females.csv"))
+males_non_depressed = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
 
 participant_col = 'Participant_ID'
 au_columns_c = [col for col in females_non_depressed.columns if col.endswith('_c')]
@@ -26,7 +30,7 @@ male_percentages = presence_percentage_per_participant(males_non_depressed, 'Mal
 combined_percentages = pd.concat([female_percentages, male_percentages], ignore_index=True)
 
 for au in au_columns_c:
-    combined_percentages[au] = combined_percentages[au].round(2)
+    combined_percentages[au] = pd.to_numeric(combined_percentages[au], errors='coerce').round(2)
 
 grouped_avg = combined_percentages.groupby('Group')[au_columns_c].mean().reset_index()
 

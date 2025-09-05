@@ -1,9 +1,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
-non_depressed_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-non_depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load data
+non_depressed_females = pd.read_csv(os.path.join(script_dir, "non_depressed_females.csv"))
+non_depressed_males = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
+
 
 au_cols = ['AU05_r', 'AU15_r']
 

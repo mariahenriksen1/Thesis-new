@@ -1,9 +1,22 @@
 import pandas as pd
+import os
 
-female_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/female_participants.csv")
-male_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/male_participants.csv")
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-if 'PHQ8_Binary' in female_data.columns and 'PHQ8_Binary' in male_data.columns and 'Participant_ID' in female_data.columns and 'Participant_ID' in male_data.columns:
+# Path to the WomenMenSplit folder (input)
+women_men_split_dir = os.path.abspath(os.path.join(script_dir, "..", "WomenMenSplit"))
+
+# Path to the NonDepFemaleNonDepMaleSplit folder (output)
+non_dep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit"))
+
+# Load input data
+female_data = pd.read_csv(os.path.join(women_men_split_dir, "female_participants.csv"))
+male_data = pd.read_csv(os.path.join(women_men_split_dir, "male_participants.csv"))
+
+# Check required columns
+if all(col in female_data.columns for col in ['PHQ8_Binary', 'Participant_ID']) and \
+   all(col in male_data.columns for col in ['PHQ8_Binary', 'Participant_ID']):
 
     # Identify unique participant IDs for non-depressed individuals (PHQ8_Binary == 0)
     non_depressed_female_count = female_data[female_data['PHQ8_Binary'] == 0]['Participant_ID'].nunique()
@@ -13,9 +26,9 @@ if 'PHQ8_Binary' in female_data.columns and 'PHQ8_Binary' in male_data.columns a
     non_depressed_females = female_data[female_data['PHQ8_Binary'] == 0]
     non_depressed_males = male_data[male_data['PHQ8_Binary'] == 0]
 
-    # Save the split datasets
-    non_depressed_females.to_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv", index=False)
-    non_depressed_males.to_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv", index=False)
+    # Save the split datasets dynamically
+    non_depressed_females.to_csv(os.path.join(non_dep_split_dir, "non_depressed_females.csv"), index=False)
+    non_depressed_males.to_csv(os.path.join(non_dep_split_dir, "non_depressed_males.csv"), index=False)
 
     print(f"Non-depressed females: {non_depressed_female_count} participants")
     print(f"Non-depressed males: {non_depressed_male_count} participants")
