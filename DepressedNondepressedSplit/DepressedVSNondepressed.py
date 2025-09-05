@@ -8,8 +8,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 data_directory = os.path.abspath(os.path.join(script_dir, "..", "PreprocessedFiles"))
 output_directory = os.path.abspath(os.path.join(script_dir, "..", "DepressedNondepressedSplit"))
 
-# Make sure the output directory exists
-os.makedirs(output_directory, exist_ok=True)
 
 all_data = []
 
