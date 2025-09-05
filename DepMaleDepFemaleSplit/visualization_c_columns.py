@@ -1,15 +1,25 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-females_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-males_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+females_depressed = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
+males_depressed = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
+
+#females_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
+#males_depressed = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
 
 participant_col = 'Participant_ID'
 au_columns_c = [col for col in females_depressed.columns if col.endswith('_c')]
 
-females_depressed[au_columns_c] = females_depressed[au_columns_c].replace(-100, pd.NA)
-males_depressed[au_columns_c] = males_depressed[au_columns_c].replace(-100, pd.NA)
+females_depressed[au_columns_c] = females_depressed[au_columns_c].apply(pd.to_numeric, errors='coerce')
+males_depressed[au_columns_c] = males_depressed[au_columns_c].apply(pd.to_numeric, errors='coerce')
+
 
 def presence_percentage_per_participant(df, group_label):
     grouped = df.groupby(participant_col)
