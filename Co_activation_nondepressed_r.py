@@ -1,10 +1,17 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
-# Load the datasets
-nondep_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-nondep_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path to NonDepFemaleNonDepMaleSplit (assuming it's one folder up from the script)
+nondep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit"))
+
+# Load datasets dynamically
+nondep_females = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_females.csv"))
+nondep_males = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_males.csv"))
 
 # Add gender column to each dataset
 nondep_females['Gender'] = 'Female'

@@ -3,9 +3,18 @@ from scipy.integrate import simpson
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
+import os
 
-dep_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-dep_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the folder where the files are stored
+dep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "DepMaleDepFemaleSplit"))
+
+# Load data
+dep_females = pd.read_csv(os.path.join(dep_split_dir, "depressed_females.csv"))
+dep_males = pd.read_csv(os.path.join(dep_split_dir, "depressed_males.csv"))
+
 
 au_r_cols = [col for col in dep_females.columns if col.endswith('_r')]
 

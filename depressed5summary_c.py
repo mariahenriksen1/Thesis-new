@@ -1,10 +1,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
-#Load the data
-females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_females.csv")
-males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepMaleDepFemaleSplit/depressed_males.csv")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path to DepMaleDepFemaleSplit (assuming it's one folder up from this script)
+dep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "DepMaleDepFemaleSplit"))
+
+# Load the data
+females = pd.read_csv(os.path.join(dep_split_dir, "depressed_females.csv"))
+males = pd.read_csv(os.path.join(dep_split_dir, "depressed_males.csv"))
 
 # Get the number of frames for each participant
 female_lengths = females.groupby('Participant_ID')['frame'].nunique().reset_index(name='Total_Frames')

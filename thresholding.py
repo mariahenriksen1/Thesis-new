@@ -3,10 +3,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import os
 
-# Load datasets
-nondep_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-nondep_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path to the NonDepFemaleNonDepMaleSplit folder
+nondep_split_dir = os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit")
+
+# Load the CSV files dynamically
+nondep_females = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_females.csv"))
+nondep_males = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_males.csv"))
+
 
 # Define threshold
 threshold_value = 0.1  # Set the threshold value

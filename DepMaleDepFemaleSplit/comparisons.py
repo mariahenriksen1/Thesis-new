@@ -7,12 +7,9 @@ import matplotlib.pyplot as plt
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Build paths relative to the script location
-females_file = os.path.join(script_dir, "depressed_females.csv")
-males_file = os.path.join(script_dir, "depressed_males.csv")
+depressed_females = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
+depressed_males = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
 
-# Load your data
-depressed_females = pd.read_csv(females_file)
-depressed_males = pd.read_csv(males_file)
 
 # Specify the facial action units columns
 au_columns = [col for col in depressed_females.columns if col.endswith('_r')]

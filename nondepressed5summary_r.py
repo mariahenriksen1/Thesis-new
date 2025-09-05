@@ -1,10 +1,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Go up one level and into the NonDepFemaleNonDepMaleSplit folder
+split_dir = os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit")
 
 # Load the data
-females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+females = pd.read_csv(os.path.join(split_dir, "non_depressed_females.csv"))
+males = pd.read_csv(os.path.join(split_dir, "non_depressed_males.csv"))
 
 # Get AU columns for AU_r
 au_r_cols = [col for col in females.columns if col.endswith('_r')]  # Identifying AU_r columns based on the '_r' suffix

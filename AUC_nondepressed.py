@@ -3,10 +3,17 @@ from scipy.integrate import simpson
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
+import os
 
-nondep_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-nondep_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Path to the NonDepFemaleNonDepMaleSplit folder
+nondep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit"))
+
+# Load data 
+nondep_females = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_females.csv"))
+nondep_males = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_males.csv"))
 au_r_cols = [col for col in nondep_females.columns if col.endswith('_r')]
 
 # Function to compute AUC

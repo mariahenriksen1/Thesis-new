@@ -1,9 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
-nondep_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_females.csv")
-nondep_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/NonDepFemaleNonDepMaleSplit/non_depressed_males.csv")
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path to NonDepFemaleNonDepMaleSplit (assuming it's one folder up from the script)
+nondep_split_dir = os.path.abspath(os.path.join(script_dir, "..", "NonDepFemaleNonDepMaleSplit"))
+
+# Load datasets without hardcoded paths
+nondep_females = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_females.csv"))
+nondep_males = pd.read_csv(os.path.join(nondep_split_dir, "non_depressed_males.csv"))
+
 
 nondep_females['Gender'] = 'Female'
 nondep_males['Gender'] = 'Male'
