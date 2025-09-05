@@ -52,11 +52,22 @@
 # # plt.tight_layout()
 # # plt.show()
 
+import os
 import pandas as pd
 from scipy.stats import mannwhitneyu
 
-depressed_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepressedNondepressedSplit/depressed_participants.csv")
-non_depressed_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/DepressedNondepressedSplit/non_depressed_participants.csv")
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Build paths relative to the script location
+depressed_data_path = os.path.join(script_dir, "depressed_participants.csv")
+non_depressed_data_path = os.path.join(script_dir, "non_depressed_participants.csv")
+
+# Load your data
+depressed_data = pd.read_csv(depressed_data_path)
+non_depressed_data = pd.read_csv(non_depressed_data_path)
+
 
 au_columns = [col for col in depressed_data.columns if col.endswith('_r')]
 
