@@ -1,8 +1,14 @@
+import os 
 import pandas as pd
 import numpy as np
 
-depressed_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/FemaleDepressionSplit/depressed_females.csv")
-non_depressed_females = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/FemaleDepressionSplit/non_depressed_females.csv")
+# Get the dicrectory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load files
+depressed_females = pd.read_csv(os.path.join(script_dir, "depressed_females.csv"))
+non_depressed_females = pd.read_csv(os.path.join(script_dir, "non_depressed_females.csv"))
+
 
 au_columns = [col for col in depressed_females.columns if col.endswith('_c')]
 
