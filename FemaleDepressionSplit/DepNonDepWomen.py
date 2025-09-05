@@ -8,8 +8,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 women_men_split_dir = os.path.abspath(os.path.join(script_dir, "..", "WomenMenSplit"))
 female_split_dir = os.path.abspath(os.path.join(script_dir, "..", "FemaleDepressionSplit"))
 
-# Ensure the output folder exists
-#os.makedirs(female_split_dir, exist_ok=True)
 
 # Load female participants data
 female_data_file = os.path.join(women_men_split_dir, "female_participants.csv")

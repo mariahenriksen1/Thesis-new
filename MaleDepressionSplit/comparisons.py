@@ -63,9 +63,15 @@
 
 import pandas as pd
 from scipy.stats import mannwhitneyu
+import os
 
-depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/MaleDepressionSplit/depressed_males.csv")
-non_depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/MaleDepressionSplit/non_depressed_males.csv")
+
+# Get the dicrectory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load files
+depressed_males = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
+non_depressed_males = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
 
 au_columns = [col for col in depressed_males.columns if col.endswith('_r')]
 

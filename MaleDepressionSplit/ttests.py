@@ -1,9 +1,13 @@
 from scipy.stats import mannwhitneyu
 import pandas as pd
+import os
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load data
-depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/MaleDepressionSplit/depressed_males.csv")
-non_depressed_males = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/MaleDepressionSplit/non_depressed_males.csv")
+depressed_males = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
+non_depressed_males = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
 
 # Select AU columns
 au_columns = [col for col in depressed_males.columns if col.endswith('_c')]
