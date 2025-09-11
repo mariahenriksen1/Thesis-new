@@ -1,10 +1,6 @@
 import os
 import pandas as pd
 
-# # Assuming your data is already loaded in female_data and male_data
-# female_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/female_participants.csv")
-# male_data = pd.read_csv("/Users/courtneymarshall/Desktop/DAIC-WOZ/ExploringActionUnits/WomenMenSplit/male_participants.csv")
-
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
