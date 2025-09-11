@@ -25,25 +25,25 @@ def describe_au(data, label):
         print(f"  Max: {data[au].max():.4f}")
         print(f"  Range: {(data[au].max() - data[au].min()):.4f}")
 
-# Output stats
-describe_au(female_means, "Depressed Females")
-describe_au(male_means, "Depressed Males")
+# # Output stats
+# describe_au(female_means, "Depressed Females")
+# describe_au(male_means, "Depressed Males")
 
-# purple = '#9B4D96'   
-# orange = '#FF8C00'   
+purple = '#9B4D96'   
+orange = '#FF8C00'   
 
-# plt.figure(figsize=(12, 5))
-# for i, au in enumerate(au_cols):
-#     plt.subplot(1, 2, i+1)
-#     plt.hist(female_means[au], bins=20, alpha=0.6, label='Female', color=purple, density=True)
-#     plt.hist(male_means[au], bins=20, alpha=0.6, label='Male', color=orange, density=True)
+plt.figure(figsize=(12, 5))
+for i, au in enumerate(au_cols):
+    plt.subplot(1, 2, i+1)
+    plt.hist(female_means[au], bins=20, alpha=0.6, label='Female', color=purple, density=True)
+    plt.hist(male_means[au], bins=20, alpha=0.6, label='Male', color=orange, density=True)
     
-#     plt.title(f'{au} Histogram (Depressed)')
-#     plt.xlabel('Mean Intensity')
-#     plt.ylabel('Density')
-#     plt.legend()
-#     plt.grid(True)
+    plt.title(f'{au} Histogram (Depressed)')
+    plt.xlabel('Mean Intensity')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.grid(True)
 
-# plt.tight_layout()
-# plt.show()
+plt.tight_layout()
+plt.show()
 
