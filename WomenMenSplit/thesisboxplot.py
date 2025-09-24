@@ -5,7 +5,14 @@ import seaborn as sns
 from glob import glob
 
 # Path to folder with cleaned participant AU files
-data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
+#Courtney's path
+#data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
+
+#Maria's path
+data_folder = "/Users/mariahenriksen/Library/Mobile Documents/com~apple~CloudDocs/daicwoz/cleaned_participants_with_gender"
+
+
+
 
 # Get list of all cleaned CSV files
 all_files = glob(os.path.join(data_folder, "*_CLNF_AUs_cleaned_with_gender.csv"))
