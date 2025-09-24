@@ -2,54 +2,57 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from glob import glob
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Path to folder with cleaned participant AU files
+data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
 
-# Build paths relative to the script location
-female_file = os.path.join(script_dir, "female_participants.csv")
-male_file = os.path.join(script_dir, "male_participants.csv")
+# Get list of all cleaned CSV files
+all_files = glob(os.path.join(data_folder, "*_CLNF_AUs_cleaned_with_gender.csv"))
 
-# Load your data
-female_data = pd.read_csv(female_file)
-male_data = pd.read_csv(male_file)
+# Load and combine all files
+all_data_list = []
+for file in all_files:
+    df = pd.read_csv(file)
+    # Ensure 'Participant_ID' column exists
+    if 'Participant_ID' not in df.columns:
+        participant_id = int(os.path.basename(file).split('_')[0])
+        df['Participant_ID'] = participant_id
+    all_data_list.append(df)
 
-# Select AU columns (those ending with "_r")
-au_columns = [col for col in female_data.columns if col.endswith('_r')]
+all_data = pd.concat(all_data_list, ignore_index=True)
 
-# Grouping by Participant_ID and calculating mean
-female_aggregated = female_data.groupby('Participant_ID')[au_columns].mean()
-male_aggregated = male_data.groupby('Participant_ID')[au_columns].mean()
+# Map numeric gender to strings
+all_data['Gender'] = all_data['Gender'].map({0: 'Female', 1: 'Male'})
 
-# Add a "Group" column for gender
-female_aggregated['Group'] = 'Female'
-male_aggregated['Group'] = 'Male'
+# Identify AU columns (those ending with "_r")
+au_columns = [col for col in all_data.columns if col.endswith('_r')]
 
-# Combine male and female aggregated data
-combined_data = pd.concat([female_aggregated, male_aggregated])
+# Aggregate by Participant_ID and Gender (mean AU values per participant)
+aggregated = all_data.groupby(['Participant_ID', 'Gender'])[au_columns].mean().reset_index()
 
 # Melt the data for seaborn plotting
-combined_data_melted = combined_data.reset_index().melt(
-    id_vars=['Participant_ID', 'Group'], 
-    value_vars=au_columns, 
-    var_name='AU', 
+aggregated_melted = aggregated.melt(
+    id_vars=['Participant_ID', 'Gender'],
+    value_vars=au_columns,
+    var_name='AU',
     value_name='Value'
 )
 
 # Custom colors
-darker_purple = "#9B4D96"
-soft_orange = "#FF8C00"
+darker_purple = "#9B4D96"  # Female
+soft_orange = "#FF8C00"    # Male
 
 # Plotting
 plt.figure(figsize=(16, 6))
 ax = sns.boxplot(
-    data=combined_data_melted, 
-    x='AU', y='Value', hue='Group',
-    palette=[darker_purple, soft_orange], 
+    data=aggregated_melted,
+    x='AU', y='Value', hue='Gender',
+    palette=[darker_purple, soft_orange],
     showfliers=False
 )
 
-plt.title('Boxplot of AUs by Gender')
+plt.title('Boxplot of AUs by Gender (Aggregated per Participant)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
