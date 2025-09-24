@@ -2,53 +2,71 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from glob import glob
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Folder with final cleaned participant files
+data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
 
-# Build paths relative to the script location
-depressed_file = os.path.join(script_dir, "depressed_participants.csv")
-nondepressed_file = os.path.join(script_dir, "non_depressed_participants.csv")
+# Get all participant CSV files
+all_files = glob(os.path.join(data_folder, "*_CLNF_AUs_final.csv"))
 
-# Load your data
-depressed_data = pd.read_csv(depressed_file)
-nondepressed_data = pd.read_csv(nondepressed_file)
+# Load and combine all participant files
+all_data_list = []
+for file in all_files:
+    df = pd.read_csv(file)
+    # Ensure Participant_ID exists
+    if 'Participant_ID' not in df.columns:
+        participant_id = int(os.path.basename(file).split('_')[0])
+        df['Participant_ID'] = participant_id
+    all_data_list.append(df)
 
-# Select AU columns (those ending with "_r")
-au_columns = [col for col in depressed_data.columns if col.endswith('_r')]
+all_data = pd.concat(all_data_list, ignore_index=True)
 
-# Grouping by Participant_ID and calculating mean
-depressed_aggregated = depressed_data.groupby('Participant_ID')[au_columns].mean()
-nondepressed_aggregated = nondepressed_data.groupby('Participant_ID')[au_columns].mean()
+# Map PHQ8_Binary to labels
+all_data['Depression_Status'] = all_data['PHQ8_Binary'].map({0: 'Non-Depressed', 1: 'Depressed'})
 
-# Add a "Group" column for depression status
-depressed_aggregated['Group'] = 'Depressed'
-nondepressed_aggregated['Group'] = 'Non-Depressed'
+# Identify AU columns (those ending with "_r")
+au_columns = [col for col in all_data.columns if col.endswith('_r')]
 
-# Combine datasets
-combined_data = pd.concat([depressed_aggregated, nondepressed_aggregated])
+# Aggregate by Participant_ID and Depression_Status
+aggregated = all_data.groupby(['Participant_ID', 'Depression_Status'])[au_columns].mean().reset_index()
+
+# Count participants by depression status
+participant_counts = aggregated.groupby('Depression_Status')['Participant_ID'].nunique()
+print("Number of participants by Depression Status:")
+print(participant_counts)
 
 # Melt the data for seaborn plotting
-combined_data_melted = combined_data.reset_index().melt(
-    id_vars=['Participant_ID', 'Group'], 
-    value_vars=au_columns, 
-    var_name='AU', 
+aggregated_melted = aggregated.melt(
+    id_vars=['Participant_ID', 'Depression_Status'],
+    value_vars=au_columns,
+    var_name='AU',
     value_name='Value'
 )
 
-# Custom colors: Blue for Non-Depressed, Yellow for Depressed
-custom_palette = {"Non-Depressed": "#1f77b4", "Depressed": "#FFD700"}
+# Custom colors
+custom_palette = {"Non-Depressed": "#1f77b4", "Depressed": "#FFD700"}  
 
 # Plotting
 plt.figure(figsize=(16, 6))
 ax = sns.boxplot(
-    data=combined_data_melted, 
-    x='AU', y='Value', hue='Group',
-    palette=custom_palette, 
+    data=aggregated_melted,
+    x='AU', y='Value', hue='Depression_Status',
+    palette=custom_palette,
     showfliers=False
 )
 
-plt.title('Boxplot of AUs by Depression Status')
+plt.title('Boxplot of Action Units Split by Depression Status')
 plt.xticks(rotation=90)
 plt.tight_layout()
+
+# Save the figure
+output_file = "/Users/raemarshall/Desktop/Thesis-new/DepressedNondepressedSplit/au_boxplot_by_depression_status.png"
+plt.savefig(output_file, dpi=300)
+print(f"Boxplot saved to {output_file}")
+
 plt.show()
+
+# Check which participants are missing PHQ8_Binary
+missing_phq8 = all_data[all_data['PHQ8_Binary'].isna()]['Participant_ID'].unique()
+print("Participants missing PHQ8_Binary:", missing_phq8)

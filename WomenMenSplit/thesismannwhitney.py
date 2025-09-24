@@ -5,12 +5,10 @@ from glob import glob
 
 # Folder with cleaned participant AU files
 #Courtney's path
-#data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
+data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
 
 #Maria's path
 #data_folder = "/Users/mariahenriksen/Library/Mobile Documents/com~apple~CloudDocs/daicwoz/cleaned_participants_with_gender"
-
-
 
 # Load all participant files
 all_files = glob(os.path.join(data_folder, "*_CLNF_AUs_cleaned_with_gender.csv"))
