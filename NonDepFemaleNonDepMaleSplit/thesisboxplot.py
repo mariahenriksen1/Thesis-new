@@ -39,9 +39,9 @@ male_agg = males.groupby('Participant_ID')[au_columns].mean()
 
 # Add Group column
 female_agg = female_agg.copy()
-female_agg['Group'] = 'Non-Depressed Female'
+female_agg['Group'] = 'Non-Depressed Women'
 male_agg = male_agg.copy()
-male_agg['Group'] = 'Non-Depressed Male'
+male_agg['Group'] = 'Non-Depressed Men'
 
 # Combine datasets
 combined_data = pd.concat([female_agg, male_agg])
@@ -68,12 +68,12 @@ sns.boxplot(
     palette=[darker_purple, soft_orange],
     showfliers=False
 )
-plt.title('Boxplot of AU Intensities: Non-Depressed Females vs Males')
+plt.title('Boxplot of Action Unit Intensities: Non-Depressed Women vs Men')
 plt.xticks(rotation=90)
 plt.tight_layout()
 
 # Save the figure
-output_path = "/Users/raemarshall/Desktop/Thesis-new/NonDepFemaleNonDepMaleSplit/boxplot_nondepressed_female_vs_male.png"
+output_path = "/Users/raemarshall/Desktop/Thesis-new/NonDepFemaleNonDepMaleSplit/boxplot_nondepressed_men_vs_women.png"
 plt.savefig(output_path, dpi=300)
 print(f"Boxplot saved to {output_path}")
 
