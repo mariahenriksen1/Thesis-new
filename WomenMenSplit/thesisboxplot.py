@@ -6,13 +6,10 @@ from glob import glob
 
 # Path to folder with cleaned participant AU files
 #Courtney's path
-#data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
+data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_with_gender"
 
 #Maria's path
-data_folder = "/Users/mariahenriksen/Library/Mobile Documents/com~apple~CloudDocs/daicwoz/cleaned_participants_with_gender"
-
-
-
+# data_folder = "/Users/mariahenriksen/Library/Mobile Documents/com~apple~CloudDocs/daicwoz/cleaned_participants_with_gender"
 
 # Get list of all cleaned CSV files
 all_files = glob(os.path.join(data_folder, "*_CLNF_AUs_cleaned_with_gender.csv"))
@@ -59,7 +56,13 @@ ax = sns.boxplot(
     showfliers=False
 )
 
-plt.title('Boxplot of AUs by Gender (Aggregated per Participant)')
+plt.title('Boxplot of Action Units Split by Gender (Aggregated per Participant)')
 plt.xticks(rotation=90)
 plt.tight_layout()
+
+# --- Save figure ---
+output_file = "/Users/raemarshall/Desktop/Thesis-new/WomenMenSplit/au_boxplot_by_gender.png"
+plt.savefig(output_file, dpi=300)  
+print(f"Boxplot saved to {output_file}")
+
 plt.show()
