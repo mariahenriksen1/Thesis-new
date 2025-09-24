@@ -1,67 +1,80 @@
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Folder containing all participant CSVs
+folder_path = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
 
-# Load the data
-non_depressed_females = pd.read_csv(os.path.join(script_dir, "non_depressed_females.csv"))
-non_depressed_males = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
+# Read all CSV files and add Participant_ID
+all_data = []
+for file_name in os.listdir(folder_path):
+    if file_name.endswith("_CLNF_AUs_final.csv"):
+        participant_id = int(file_name.split("_")[0])
+        df = pd.read_csv(os.path.join(folder_path, file_name))
+        df['Participant_ID'] = participant_id
+        all_data.append(df)
 
-au_columns = [col for col in non_depressed_females.columns if col.endswith('_r')]
+data = pd.concat(all_data, ignore_index=True)
 
-female_min_max = pd.DataFrame({
-    'Female_Min': non_depressed_females[au_columns].min(),
-    'Female_Max': non_depressed_females[au_columns].max()
-})
+# Filter non-depressed participants
+non_depressed_data = data[data['PHQ8_Binary'] == 0]
 
-male_min_max = pd.DataFrame({
-    'Male_Min': non_depressed_males[au_columns].min(),
-    'Male_Max': non_depressed_males[au_columns].max()
-})
+# Count unique non-depressed males and females
+counts = non_depressed_data.groupby('Participant_ID')['Gender'].first().value_counts()
+print("Counts of Non-Depressed Participants by Gender (by participant):")
+print(f"Non-Depressed Females (0): {counts.get(0, 0)}")
+print(f"Non-Depressed Males (1): {counts.get(1, 0)}")
 
-female_means = pd.DataFrame({
-    'Female_Mean': non_depressed_females[au_columns].mean()
-})
+# Select AU columns
+au_columns = [col for col in non_depressed_data.columns if col.endswith('_r')]
 
-male_means = pd.DataFrame({
-    'Male_Mean': non_depressed_males[au_columns].mean()
-})
+# Split by gender
+females = non_depressed_data[non_depressed_data['Gender'] == 0]
+males = non_depressed_data[non_depressed_data['Gender'] == 1]
 
-# Compute medians for each AU column
-female_medians = pd.DataFrame({
-    'Female_Median': non_depressed_females[au_columns].median()
-})
+# Aggregate by Participant_ID (mean per participant)
+female_agg = females.groupby('Participant_ID')[au_columns].mean()
+male_agg = males.groupby('Participant_ID')[au_columns].mean()
 
-male_medians = pd.DataFrame({
-    'Male_Median': non_depressed_males[au_columns].median()
-})
+# Add Group column
+female_agg = female_agg.copy()
+female_agg['Group'] = 'Non-Depressed Female'
+male_agg = male_agg.copy()
+male_agg['Group'] = 'Non-Depressed Male'
 
-# Combine with previous stats
-au_stats_comparison = pd.concat([female_min_max, male_min_max, female_means, male_means, female_medians, male_medians], axis=1)
+# Combine datasets
+combined_data = pd.concat([female_agg, male_agg])
 
-female_means = non_depressed_females.groupby('Participant_ID')[au_columns].mean()
-female_means['Gender'] = 'Female'
-male_means = non_depressed_males.groupby('Participant_ID')[au_columns].mean()
-male_means['Gender'] = 'Male'
+# Melt for plotting
+combined_melted = combined_data.reset_index().melt(
+    id_vars=['Participant_ID', 'Group'],
+    value_vars=au_columns,
+    var_name='AU',
+    value_name='Value'
+)
 
-combined_df = pd.concat([female_means, male_means], axis=0).reset_index()
+# Plot colors
+darker_purple = "#9B4D96"
+soft_orange = "#FF8C00"
 
-long_df = combined_df.melt(id_vars=['Participant_ID', 'Gender'], 
-                            value_vars=au_columns, 
-                            var_name='AU', 
-                            value_name='Mean_Intensity')
-
-darker_purple = "#9B4D96"  
-soft_orange = "#FF8C00"  
-
+# Plot boxplot
 plt.figure(figsize=(16, 6))
-ax = sns.boxplot(data=long_df, x='AU', y='Mean_Intensity', hue='Gender', 
-                 palette=[darker_purple, soft_orange], showfliers=False)
-
-plt.title('AU Intensities Box Plot for Non-Depressed Females vs. Non-Depressed Males')
-plt.xticks(rotation=45)
+sns.boxplot(
+    data=combined_melted,
+    x='AU',
+    y='Value',
+    hue='Group',
+    palette=[darker_purple, soft_orange],
+    showfliers=False
+)
+plt.title('Boxplot of AU Intensities: Non-Depressed Females vs Males')
+plt.xticks(rotation=90)
 plt.tight_layout()
-plt.show()
+
+# Save the figure
+output_path = "/Users/raemarshall/Desktop/Thesis-new/NonDepFemaleNonDepMaleSplit/boxplot_nondepressed_female_vs_male.png"
+plt.savefig(output_path, dpi=300)
+print(f"Boxplot saved to {output_path}")
+
+plt.close()

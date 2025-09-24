@@ -27,7 +27,7 @@ for file in all_files:
 all_data = pd.concat(all_data_list, ignore_index=True)
 
 # Map numeric gender to strings
-all_data['Gender'] = all_data['Gender'].map({0: 'Female', 1: 'Male'})
+all_data['Gender'] = all_data['Gender'].map({0: 'Women', 1: 'Men'})
 
 # Identify AU columns (those ending with "_r")
 au_columns = [col for col in all_data.columns if col.endswith('_r')]

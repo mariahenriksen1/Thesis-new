@@ -40,8 +40,8 @@ nondep_agg = non_depressed_males.groupby('Participant_ID')[au_columns].mean()
 # Add Group column
 dep_agg = dep_agg.copy()
 nondep_agg = nondep_agg.copy()
-dep_agg['Group'] = 'Depressed Male'
-nondep_agg['Group'] = 'Non-Depressed Male'
+dep_agg['Group'] = 'Depressed Men'
+nondep_agg['Group'] = 'Non-Depressed Men'
 
 # Combine datasets
 combined_data = pd.concat([dep_agg, nondep_agg])
@@ -68,7 +68,7 @@ sns.boxplot(
     palette=[darker_purple, soft_orange],
     showfliers=False
 )
-plt.title('Boxplot of Action Unit Intensities: Depressed vs. Non-Depressed Males')
+plt.title('Boxplot of Action Unit Intensities: Depressed vs. Non-Depressed Men')
 plt.xticks(rotation=90)
 plt.tight_layout()
 
@@ -79,7 +79,7 @@ output_folder = "/Users/raemarshall/Desktop/Thesis-new/MaleDepressionSplit"
 os.makedirs(output_folder, exist_ok=True)
 
 # Save the figure
-output_path = os.path.join(output_folder, "boxplot_depressed_vs_nondepressed_males.png")
+output_path = os.path.join(output_folder, "boxplot_depressed_vs_nondepressed_men.png")
 plt.savefig(output_path, dpi=300)
 print(f"Boxplot saved to {output_path}")
 
