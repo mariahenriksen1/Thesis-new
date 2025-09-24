@@ -56,7 +56,7 @@ ax = sns.boxplot(
     showfliers=False
 )
 
-plt.title('Boxplot of Action Units Split by Gender (Aggregated per Participant)')
+plt.title('Boxplot of Action Unit Intensities Split by Gender')
 plt.xticks(rotation=90)
 plt.tight_layout()
 

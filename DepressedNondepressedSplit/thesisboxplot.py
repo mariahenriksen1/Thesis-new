@@ -56,7 +56,7 @@ ax = sns.boxplot(
     showfliers=False
 )
 
-plt.title('Boxplot of Action Units Split by Depression Status')
+plt.title('Boxplot of Action Unit Intensities Split by Depression Status')
 plt.xticks(rotation=90)
 plt.tight_layout()
 

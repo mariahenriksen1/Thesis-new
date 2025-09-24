@@ -3,38 +3,50 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Folder containing all participant CSVs
+folder_path = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
 
-# Load files
-depressed_males = pd.read_csv(os.path.join(script_dir, "depressed_males.csv"))
-non_depressed_males = pd.read_csv(os.path.join(script_dir, "non_depressed_males.csv"))
+# Read all CSV files and add Participant_ID
+all_data = []
+for file_name in os.listdir(folder_path):
+    if file_name.endswith("_CLNF_AUs_final.csv"):
+        participant_id = int(file_name.split("_")[0])
+        df = pd.read_csv(os.path.join(folder_path, file_name))
+        df['Participant_ID'] = participant_id
+        all_data.append(df)
+
+data = pd.concat(all_data, ignore_index=True)
+
+# Filter only male participants
+male_data = data[data['Gender'] == 1]
+
+# Split male data into depressed and non-depressed
+depressed_males = male_data[male_data['PHQ8_Binary'] == 1]
+non_depressed_males = male_data[male_data['PHQ8_Binary'] == 0]
+
+# Count unique depressed vs non-depressed males
+male_counts = male_data.groupby('Participant_ID')['PHQ8_Binary'].first().value_counts()
+print("Counts of Depressed vs Non-Depressed Males (by participant):")
+print(f"Non-Depressed (0): {male_counts.get(0, 0)}")
+print(f"Depressed (1): {male_counts.get(1, 0)}")
 
 # Select AU columns (those ending with "_r")
-au_columns = [col for col in depressed_males.columns if col.endswith('_r')]
+au_columns = [col for col in male_data.columns if col.endswith('_r')]
 
-# Grouping by Participant_ID and calculating mean and std
-depressed_aggregated = depressed_males.groupby('Participant_ID')[au_columns].agg(['mean', 'std'])
-non_depressed_aggregated = non_depressed_males.groupby('Participant_ID')[au_columns].agg(['mean', 'std'])
-
-# Extract only the mean values
-depressed_means = depressed_aggregated.xs('mean', axis=1, level=1)
-non_depressed_means = non_depressed_aggregated.xs('mean', axis=1, level=1)
+# Aggregate by Participant_ID (mean per participant)
+dep_agg = depressed_males.groupby('Participant_ID')[au_columns].mean()
+nondep_agg = non_depressed_males.groupby('Participant_ID')[au_columns].mean()
 
 # Add Group column
-depressed_means = depressed_means.copy()
-non_depressed_means = non_depressed_means.copy()
-
-depressed_means['Group'] = 'Depressed Male'
-non_depressed_means['Group'] = 'Non-Depressed Male'
+dep_agg = dep_agg.copy()
+nondep_agg = nondep_agg.copy()
+dep_agg['Group'] = 'Depressed Male'
+nondep_agg['Group'] = 'Non-Depressed Male'
 
 # Combine datasets
-combined_data = pd.concat([depressed_means, non_depressed_means])
+combined_data = pd.concat([dep_agg, nondep_agg])
 
-# Save combined data to CSV
-combined_data.to_csv('depressed_vs_nondepressed_males_results.csv', index=False)
-
-# Melt the data for plotting
+# Reset index and melt for plotting
 combined_melted = combined_data.reset_index().melt(
     id_vars=['Participant_ID', 'Group'],
     value_vars=au_columns,
@@ -42,12 +54,13 @@ combined_melted = combined_data.reset_index().melt(
     value_name='Value'
 )
 
+# Plot colors
 darker_purple = "#9B4D96"
 soft_orange = "#FF8C00"
 
-# Plotting
+# Plot boxplot
 plt.figure(figsize=(16, 6))
-ax = sns.boxplot(
+sns.boxplot(
     data=combined_melted,
     x='AU',
     y='Value',
@@ -55,7 +68,19 @@ ax = sns.boxplot(
     palette=[darker_purple, soft_orange],
     showfliers=False
 )
-plt.title('Boxplot of AUs: Depressed vs. Non-Depressed Males')
+plt.title('Boxplot of Action Unit Intensities: Depressed vs. Non-Depressed Males')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.show()
+
+# Folder where you want to save the figure
+output_folder = "/Users/raemarshall/Desktop/Thesis-new/MaleDepressionSplit"
+
+# Make sure the folder exists
+os.makedirs(output_folder, exist_ok=True)
+
+# Save the figure
+output_path = os.path.join(output_folder, "boxplot_depressed_vs_nondepressed_males.png")
+plt.savefig(output_path, dpi=300)
+print(f"Boxplot saved to {output_path}")
+
+plt.close()
