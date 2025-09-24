@@ -68,7 +68,7 @@ sns.boxplot(
     palette=[darker_purple, soft_orange],
     showfliers=False
 )
-plt.title('Boxplot of Action Unit Intensities: Non-Depressed Women vs Men')
+plt.title('Boxplot of Action Unit Intensities: Non-Depressed Women vs Non-Depressed Men')
 plt.xticks(rotation=90)
 plt.tight_layout()
 
