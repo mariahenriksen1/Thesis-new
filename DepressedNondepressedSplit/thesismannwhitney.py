@@ -2,47 +2,56 @@ import os
 import pandas as pd
 from scipy.stats import mannwhitneyu
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+data_folder = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
+all_files = [f for f in os.listdir(data_folder) if f.endswith('.csv')]
 
-# Build paths relative to the script location
-depressed_file = os.path.join(script_dir, "depressed_participants.csv")
-nondepressed_file = os.path.join(script_dir, "non_depressed_participants.csv")
+# Load all files into one DataFrame
+all_data = []
+for file in all_files:
+    df = pd.read_csv(os.path.join(data_folder, file))
+    # Extract participant ID from filename
+    participant_id = int(file.split('_')[0])
+    df['Participant_ID'] = participant_id
+    all_data.append(df)
 
-# Load your data
-depressed_data = pd.read_csv(depressed_file)
-nondepressed_data = pd.read_csv(nondepressed_file)
+all_data = pd.concat(all_data, ignore_index=True)
 
-# Select AU columns (those ending with "_r")
-au_columns = [col for col in depressed_data.columns if col.endswith('_r')]
+# Ensure column names are clean
+all_data.columns = all_data.columns.str.strip()
+
+# Split by depression status
+depressed_data = all_data[all_data['PHQ8_Binary'] == 1]
+nondepressed_data = all_data[all_data['PHQ8_Binary'] == 0]
 
 # Aggregate by Participant_ID (mean values per participant)
 depressed_agg = depressed_data.groupby('Participant_ID').mean()
 nondepressed_agg = nondepressed_data.groupby('Participant_ID').mean()
 
-# Define Mann-Whitney U test
-def mann_whitney_u_test(x, y):
-    U, p_value = mannwhitneyu(x, y, alternative='two-sided')
-    return U, p_value
+# Select AU columns (those ending with "_r")
+au_columns = [col for col in depressed_agg.columns if col.endswith('_r')]
 
-# Run tests for each AU
-p_values = []
-au_names = []
-
+# Run Mann-Whitney U test
+results = []
 for au in au_columns:
-    dep_values = depressed_agg[au]
-    nondep_values = nondepressed_agg[au]
+    U, p = mannwhitneyu(depressed_agg[au], nondepressed_agg[au], alternative='two-sided')
+    results.append({'AU': au, 'P-Value': round(p, 5)})
 
-    U, p_value = mann_whitney_u_test(dep_values, nondep_values)
-    
-    p_values.append(round(p_value, 5))
-    au_names.append(au)
+results_df = pd.DataFrame(results).sort_values(by='P-Value')
+print(results_df)
 
-# Build results dataframe
-results_df = pd.DataFrame({
-    'AU': au_names,
-    'P-Value': p_values
-})
-
-print("All AUs with their P-Values:")
-print(results_df.sort_values(by='P-Value'))
+#Results 
+#         AU  P-Value
+# 10  AU17_r  0.12631
+# 0   AU01_r  0.19704
+# 11  AU20_r  0.22352
+# 9   AU15_r  0.25245
+# 6   AU10_r  0.31367
+# 1   AU02_r  0.36359
+# 2   AU04_r  0.62469
+# 8   AU14_r  0.63088
+# 3   AU05_r  0.71803
+# 13  AU26_r  0.72894
+# 5   AU09_r  0.81127
+# 7   AU12_r  0.83848
+# 4   AU06_r  0.87734
+# 12  AU25_r  0.97212
