@@ -2,23 +2,33 @@ import os
 import pandas as pd
 from scipy.stats import mannwhitneyu
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# Folder containing all participant CSVs
+folder_path = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
 
-# Build paths relative to the script location
-depressed_female_file = os.path.join(script_dir, "depressed_females.csv")
-depressed_male_file = os.path.join(script_dir, "depressed_males.csv")
+# Read all CSV files and add Participant_ID
+all_data = []
+for file_name in os.listdir(folder_path):
+    if file_name.endswith("_CLNF_AUs_final.csv"):
+        participant_id = int(file_name.split("_")[0])
+        df = pd.read_csv(os.path.join(folder_path, file_name))
+        df['Participant_ID'] = participant_id
+        all_data.append(df)
 
-# Load your data
-depressed_females = pd.read_csv(depressed_female_file)
-depressed_males = pd.read_csv(depressed_male_file)
+data = pd.concat(all_data, ignore_index=True)
 
-# Select AU columns (those ending with "_r")
-au_columns = [col for col in depressed_females.columns if col.endswith('_r')]
+# Filter only depressed participants
+depressed_data = data[data['PHQ8_Binary'] == 1]
 
-# Aggregate by Participant_ID (mean values per participant)
-dep_female_agg = depressed_females.groupby('Participant_ID').mean()
-dep_male_agg = depressed_males.groupby('Participant_ID').mean()
+# Split by gender
+females = depressed_data[depressed_data['Gender'] == 0]
+males = depressed_data[depressed_data['Gender'] == 1]
+
+# Select AU columns
+au_columns = [col for col in depressed_data.columns if col.endswith('_r')]
+
+# Aggregate by Participant_ID (mean per participant)
+females_agg = females.groupby('Participant_ID')[au_columns].mean()
+males_agg = males.groupby('Participant_ID')[au_columns].mean()
 
 # Define Mann-Whitney U test
 def mann_whitney_u_test(x, y):
@@ -30,13 +40,9 @@ p_values = []
 au_names = []
 
 for au in au_columns:
-    female_values = dep_female_agg[au]
-    male_values = dep_male_agg[au]
-
-    U, p_value = mann_whitney_u_test(female_values, male_values)
-    
-    p_values.append(round(p_value, 5))
+    U, p_value = mann_whitney_u_test(females_agg[au], males_agg[au])
     au_names.append(au)
+    p_values.append(round(p_value, 5))
 
 # Build results dataframe
 results_df = pd.DataFrame({
@@ -44,5 +50,22 @@ results_df = pd.DataFrame({
     'P-Value': p_values
 })
 
-print("All AUs with their P-Values (Depressed Females vs Depressed Males):")
+print("All AUs with their P-Values (Depressed Women vs Depressed Men):")
 print(results_df.sort_values(by='P-Value'))
+
+# All AUs with their P-Values (Depressed Women vs Depressed Men):
+#         AU  P-Value
+# 5   AU09_r  0.03633
+# 10  AU17_r  0.09932
+# 7   AU12_r  0.24862
+# 3   AU05_r  0.28403
+# 9   AU15_r  0.39142
+# 1   AU02_r  0.46833
+# 12  AU25_r  0.57522
+# 2   AU04_r  0.65632
+# 6   AU10_r  0.65632
+# 4   AU06_r  0.68031
+# 11  AU20_r  0.70463
+# 8   AU14_r  0.71691
+# 13  AU26_r  0.86909
+# 0   AU01_r  0.97370
