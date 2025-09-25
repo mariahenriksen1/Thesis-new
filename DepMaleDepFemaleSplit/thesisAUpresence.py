@@ -3,10 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Folder containing all participant CSVs
 folder_path = "/Users/raemarshall/Desktop/daicwoz/cleaned_participants_final"
 
-# Read all CSV files and add Participant_ID and Gender/PHQ8_Binary
 all_data = []
 for file_name in os.listdir(folder_path):
     if file_name.endswith("_CLNF_AUs_final.csv"):
@@ -17,26 +15,25 @@ for file_name in os.listdir(folder_path):
 
 data = pd.concat(all_data, ignore_index=True)
 
-# Filter non-depressed participants
-non_depressed_data = data[data['PHQ8_Binary'] == 0]
+depressed_data = data[data['PHQ8_Binary'] == 1]
 
 # Split by gender
-females_non_depressed = non_depressed_data[non_depressed_data['Gender'] == 0]
-males_non_depressed = non_depressed_data[non_depressed_data['Gender'] == 1]
+females_depressed = depressed_data[depressed_data['Gender'] == 0]
+males_depressed = depressed_data[depressed_data['Gender'] == 1]
 
 # Count unique participants in each group
-female_count = females_non_depressed['Participant_ID'].nunique()
-male_count = males_non_depressed['Participant_ID'].nunique()
+female_count = females_depressed['Participant_ID'].nunique()
+male_count = males_depressed['Participant_ID'].nunique()
 
 print(f"Depressed Females (unique participants): {female_count}")
 print(f"Depressed Males (unique participants): {male_count}")
 
 # Select columns ending with "_c"
-au_columns_c = [col for col in non_depressed_data.columns if col.endswith('_c')]
+au_columns_c = [col for col in depressed_data.columns if col.endswith('_c')]
 
 # Replace -100 with NaN safely
-females_non_depressed.loc[:, au_columns_c] = females_non_depressed.loc[:, au_columns_c].replace(-100, pd.NA)
-males_non_depressed.loc[:, au_columns_c] = males_non_depressed.loc[:, au_columns_c].replace(-100, pd.NA)
+females_depressed.loc[:, au_columns_c] = females_depressed.loc[:, au_columns_c].replace(-100, pd.NA)
+males_depressed.loc[:, au_columns_c] = males_depressed.loc[:, au_columns_c].replace(-100, pd.NA)
 
 # Function to compute AU presence percentage per participant
 def presence_percentage_per_participant(df, group_label):
@@ -48,8 +45,8 @@ def presence_percentage_per_participant(df, group_label):
     return percentages[cols].reset_index(drop=True)
 
 participant_col = 'Participant_ID'
-female_percentages = presence_percentage_per_participant(females_non_depressed, 'Women')
-male_percentages = presence_percentage_per_participant(males_non_depressed, 'Men')
+female_percentages = presence_percentage_per_participant(females_depressed, 'Women')
+male_percentages = presence_percentage_per_participant(males_depressed, 'Men')
 
 # Combine and reorder columns
 combined_percentages = pd.concat([female_percentages, male_percentages], ignore_index=True)
@@ -94,5 +91,11 @@ plt.xticks(rotation=45)
 plt.legend(title='Group')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
+
+plt.savefig(
+    "/Users/raemarshall/Desktop/Thesis-new/DepMaleDepFemaleSplit/au_presence_depressed.png",
+    dpi=300,
+    bbox_inches="tight" 
+)
 
 plt.show()

@@ -95,4 +95,11 @@ plt.legend(title='Group')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 
+plt.savefig(
+    "/Users/raemarshall/Desktop/Thesis-new/NonDepFemaleNonDepMaleSplit/au_presence_non_depressed.png",
+    dpi=300,
+    bbox_inches="tight" 
+)
+
 plt.show()
+
