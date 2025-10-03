@@ -43,31 +43,30 @@
 # # plt.tight_layout()
 # # plt.show()
 
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
+# import numpy as np
 
-# Data
-categories = ["Depressed", "Non-Depressed"]
-men_values = [25, 77]
-women_values = [31, 56]
+# # Data
+# categories = ["Depressed", "Non-Depressed"]
+# men_values = [25, 77]
+# women_values = [31, 56]
 
-x = np.arange(len(categories))  # positions for groups
-width = 0.35  # width of bars
+# x = np.arange(len(categories))  # positions for groups
+# width = 0.35  # width of bars
 
-# Create figure
-plt.figure(figsize=(7,5))
+# # Create figure
+# plt.figure(figsize=(7,5))
 
-# Plot bars with muted colors
-plt.bar(x - width/2, men_values, width, label='Men', color='#6CA0A3')      # muted teal
-plt.bar(x + width/2, women_values, width, label='Women', color='#F5A78A')  # muted coral
+# # Plot bars with muted colors
+# plt.bar(x - width/2, men_values, width, label='Men', color='#6CA0A3')      # muted teal
+# plt.bar(x + width/2, women_values, width, label='Women', color='#F5A78A')  # muted coral
 
-# Title and labels
-plt.title("Depression Status by Gender in DAIC-WOZ Dataset")
-plt.ylabel("Count")
-plt.xlabel("Depression Status")
-plt.xticks(x, categories)
-plt.legend()
+# # Title and labels
+# plt.title("Depression Status by Gender in DAIC-WOZ Dataset")
+# plt.ylabel("Count")
+# plt.xlabel("Depression Status")
+# plt.xticks(x, categories)
+# plt.legend()
 
-plt.tight_layout()
-plt.show()
-
+# plt.tight_layout()
+# plt.show()
