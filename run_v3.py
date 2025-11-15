@@ -1,5 +1,5 @@
 # landmark_model_v3.py
-# COMPLETE VERSION with all correct imports and comprehensive evaluation
+# V3 - IMPROVED with longer temporal context
 
 import os
 import random
@@ -26,18 +26,17 @@ from sklearn.metrics import (
 )
 
 # -------------------
-# CONFIG
+# CONFIG - V3 IMPROVED
 # -------------------
 data_csv_folder = "/Users/mariahenriksen/Library/Mobile Documents/com~apple~CloudDocs/daicwoz/cleaned_participants_features_final"
 
-sequence_length = 30
+# V3 IMPROVEMENTS: Longer temporal context
+sequence_length = 90        # 1.5x V2 (was 60) - capture longer patterns
 sequence_stride = 30
-batch_size = 32
-num_epochs = 5
+batch_size = 32            # If you get memory errors, reduce to 24 or 16
+num_epochs = 12            # Slightly more than V2 (was 10)
 test_size = 0.20
 seed = 42
-num_workers = 0
-pin_memory = False
 
 model_save_path = "landmark_v3.pth"
 results_dir = "./landmark_v3_results"
@@ -46,11 +45,12 @@ os.makedirs(results_dir, exist_ok=True)
 device = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 print("="*70)
-print("MODEL VERSION: V3 - BASELINE")
-print("  Sequence Length: 30 frames")
-print("  Epochs: 5")
-print("  Embed Dim: 64")
-print("  Layers: 2")
+print("MODEL VERSION: V3 - IMPROVED")
+print("  Sequence Length: 90 frames (1.5x V2)")
+print("  Epochs: 12 (V2 was 10)")
+print("  Embed Dim: 128 (same as V2)")
+print("  Layers: 3 (same as V2)")
+print("  IMPROVEMENT: Longer temporal context for better pattern capture")
 print("="*70)
 
 random.seed(seed)
@@ -61,7 +61,7 @@ torch.manual_seed(seed)
 # DATASET
 # -------------------
 class SequentialLandmarkDataset(Dataset):
-    def __init__(self, csv_paths, sequence_length=60, sequence_stride=30, 
+    def __init__(self, csv_paths, sequence_length=90, sequence_stride=30, 
                  min_confidence=0.8, max_sequences_per_participant=50):
         self.sequences = []
         
@@ -130,7 +130,7 @@ class SequentialLandmarkDataset(Dataset):
                     'participant_id': participant_id
                 })
         
-        print(f"Created {len(self.sequences)} sequences from {len(csv_paths)} participants")
+        print(f"Created {len(self.sequences)} sequences")
     
     def __len__(self):
         return len(self.sequences)
@@ -144,11 +144,11 @@ class SequentialLandmarkDataset(Dataset):
         return landmarks, gender, label
 
 # -------------------
-# MODEL
+# MODEL (Same as V2)
 # -------------------
 class SequentialTransformer(nn.Module):
-    def __init__(self, landmark_dim=136, embed_dim=64, num_heads=4, 
-                 num_layers=2, dropout=0.1, max_seq_length=100):
+    def __init__(self, landmark_dim=136, embed_dim=128, num_heads=8,
+                 num_layers=3, dropout=0.15, max_seq_length=100):
         super().__init__()
         
         self.landmark_projection = nn.Linear(landmark_dim, embed_dim)
@@ -158,7 +158,7 @@ class SequentialTransformer(nn.Module):
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=embed_dim,
             nhead=num_heads,
-            dim_feedforward=embed_dim * 2,
+            dim_feedforward=embed_dim * 3,
             dropout=dropout,
             activation='gelu',
             batch_first=True,
@@ -173,7 +173,10 @@ class SequentialTransformer(nn.Module):
             nn.Linear(embed_dim * 2, embed_dim),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(embed_dim, 1)
+            nn.Linear(embed_dim, embed_dim // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(embed_dim // 2, 1)
         )
     
     def forward(self, landmarks, gender):
@@ -211,58 +214,6 @@ ds = SequentialLandmarkDataset(
     max_sequences_per_participant=50
 )
 
-# -------------------
-# PARTICIPANT-LEVEL STATISTICS
-# -------------------
-labels = [s['label'] for s in ds.sequences]
-genders = [s['gender'] for s in ds.sequences]
-participants = [s['participant_id'] for s in ds.sequences]
-unique_participants = list(set(participants))
-
-participant_stats = {}
-for seq in ds.sequences:
-    pid = seq['participant_id']
-    if pid not in participant_stats:
-        participant_stats[pid] = {
-            'gender': seq['gender'],
-            'label': seq['label']
-        }
-
-women_not_depressed = sum(1 for p in participant_stats.values() if p['gender'] == 0 and p['label'] == 0)
-women_depressed = sum(1 for p in participant_stats.values() if p['gender'] == 0 and p['label'] == 1)
-men_not_depressed = sum(1 for p in participant_stats.values() if p['gender'] == 1 and p['label'] == 0)
-men_depressed = sum(1 for p in participant_stats.values() if p['gender'] == 1 and p['label'] == 1)
-women_total = women_not_depressed + women_depressed
-men_total = men_not_depressed + men_depressed
-total_participants = len(participant_stats)
-
-print(f"\n{'='*60}")
-print(f"PARTICIPANT-LEVEL STATISTICS (Ground Truth)")
-print(f"{'='*60}")
-print(f"Women (0): {women_total} ({women_total/total_participants*100:.1f}%)")
-print(f"  - Not depressed: {women_not_depressed} ({women_not_depressed/total_participants*100:.1f}%)")
-print(f"  - Depressed: {women_depressed} ({women_depressed/total_participants*100:.1f}%)")
-print(f"\nMen (1): {men_total} ({men_total/total_participants*100:.1f}%)")
-print(f"  - Not depressed: {men_not_depressed} ({men_not_depressed/total_participants*100:.1f}%)")
-print(f"  - Depressed: {men_depressed} ({men_depressed/total_participants*100:.1f}%)")
-print(f"\nTotal:")
-print(f"  - Not depressed: {women_not_depressed + men_not_depressed} ({(women_not_depressed + men_not_depressed)/total_participants*100:.1f}%)")
-print(f"  - Depressed: {women_depressed + men_depressed} ({(women_depressed + men_depressed)/total_participants*100:.1f}%)")
-print(f"  - Total participants: {total_participants}")
-
-print(f"\n{'='*60}")
-print(f"SEQUENCE-LEVEL STATISTICS")
-print(f"{'='*60}")
-print(f"  Total sequences: {len(ds)}")
-print(f"  Sequences per participant (avg): {len(ds) / len(unique_participants):.1f}")
-print(f"  Class 0 sequences: {labels.count(0)} ({labels.count(0)/len(labels)*100:.1f}%)")
-print(f"  Class 1 sequences: {labels.count(1)} ({labels.count(1)/len(labels)*100:.1f}%)")
-print(f"  Male sequences: {genders.count(1)}")
-print(f"  Female sequences: {genders.count(0)}")
-
-# -------------------
-# SPLIT BY PARTICIPANT
-# -------------------
 participant_labels = {}
 for seq in ds.sequences:
     if seq['participant_id'] not in participant_labels:
@@ -278,38 +229,34 @@ train_participants, val_participants = train_test_split(
 train_idx = [i for i, seq in enumerate(ds.sequences) if seq['participant_id'] in train_participants]
 val_idx = [i for i, seq in enumerate(ds.sequences) if seq['participant_id'] in val_participants]
 
-print(f"\nSplit:")
-print(f"  Train participants: {len(train_participants)}")
-print(f"  Val participants: {len(val_participants)}")
-print(f"  Train sequences: {len(train_idx)}")
-print(f"  Val sequences: {len(val_idx)}")
-
 train_ds = Subset(ds, train_idx)
 val_ds = Subset(ds, val_idx)
 
-train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False)
-val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0, pin_memory=False)
+train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
+val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0)
+
+print(f"Train: {len(train_participants)} participants, {len(train_idx)} sequences")
+print(f"Val: {len(val_participants)} participants, {len(val_idx)} sequences")
 
 # -------------------
 # MODEL SETUP
 # -------------------
 model = SequentialTransformer(
     landmark_dim=136,
-    embed_dim=64,
-    num_heads=4,
-    num_layers=2,
-    dropout=0.1,
-    max_seq_length=sequence_length + 1
+    embed_dim=128,
+    num_heads=8,
+    num_layers=3,
+    dropout=0.15,
+    max_seq_length=sequence_length + 1  # 91 to accommodate 90 frames + CLS token
 ).to(device)
 
-print(f"\nModel parameters: {sum(p.numel() for p in model.parameters()):,}")
+print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
 train_labels = [ds.sequences[i]['label'] for i in train_idx]
 pos_weight = torch.tensor([train_labels.count(0) / max(train_labels.count(1), 1)], device=device)
-print(f"Class weight (pos_weight): {pos_weight.item():.2f}")
 
 criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+optimizer = optim.AdamW(model.parameters(), lr=8e-5, weight_decay=0.01)
 scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2)
 
 # -------------------
@@ -319,7 +266,6 @@ print(f"\n{'='*70}")
 print("TRAINING V3 MODEL")
 print(f"{'='*70}\n")
 
-best_val_acc = 0.0
 best_val_auc = 0.0
 history = {'train_loss': [], 'train_acc': [], 'val_loss': [], 'val_acc': [], 'val_auc': []}
 
@@ -330,9 +276,7 @@ for epoch in range(num_epochs):
     train_total = 0
     
     for landmarks, gender, labels in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [train]"):
-        landmarks = landmarks.to(device)
-        gender = gender.to(device)
-        labels = labels.to(device).unsqueeze(1)
+        landmarks, gender, labels = landmarks.to(device), gender.to(device), labels.to(device).unsqueeze(1)
         
         optimizer.zero_grad()
         logits = model(landmarks, gender)
@@ -355,12 +299,11 @@ for epoch in range(num_epochs):
     val_total = 0
     all_probs = []
     all_labels = []
+    all_preds = []
     
     with torch.no_grad():
         for landmarks, gender, labels in tqdm(val_loader, desc=f"Epoch {epoch+1}/{num_epochs} [val]"):
-            landmarks = landmarks.to(device)
-            gender = gender.to(device)
-            labels = labels.to(device).unsqueeze(1)
+            landmarks, gender, labels = landmarks.to(device), gender.to(device), labels.to(device).unsqueeze(1)
             
             logits = model(landmarks, gender)
             loss = criterion(logits, labels)
@@ -373,6 +316,7 @@ for epoch in range(num_epochs):
             
             all_probs.extend(probs.cpu().numpy().flatten())
             all_labels.extend(labels.cpu().numpy().flatten())
+            all_preds.extend(preds.cpu().numpy().flatten())
     
     val_loss /= val_total
     val_acc = 100.0 * val_correct / val_total
@@ -390,20 +334,12 @@ for epoch in range(num_epochs):
     print(f"  Train: Loss={train_loss:.4f}, Acc={train_acc:.2f}%")
     print(f"  Val: Loss={val_loss:.4f}, Acc={val_acc:.2f}%, AUC={val_auc:.4f}")
     
-    cm = confusion_matrix(all_labels, [1 if p > 0.5 else 0 for p in all_probs])
-    print(f"  Confusion Matrix:\n{cm}")
-    
     if val_auc > best_val_auc:
         best_val_auc = val_auc
-        best_val_acc = val_acc
-        best_probs = all_probs.copy()
-        best_labels = all_labels.copy()
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'val_acc': val_acc,
-            'val_auc': val_auc,
-        }, model_save_path)
+        best_probs = all_probs
+        best_labels = all_labels
+        best_preds = all_preds
+        torch.save({'model_state_dict': model.state_dict(), 'val_acc': val_acc, 'val_auc': val_auc}, model_save_path)
         print(f"  ✓ Best model saved!")
 
 # -------------------
@@ -413,15 +349,13 @@ print(f"\n{'='*70}")
 print("COMPREHENSIVE EVALUATION - V3 RESULTS")
 print(f"{'='*70}\n")
 
-# Calculate all metrics using best epoch results
-all_preds = [1 if p > 0.5 else 0 for p in best_probs]
-cm = confusion_matrix(best_labels, all_preds)
+cm = confusion_matrix(best_labels, best_preds)
 tn, fp, fn, tp = cm.ravel()
 
-accuracy = accuracy_score(best_labels, all_preds)
-precision_dep = precision_score(best_labels, all_preds, pos_label=1, zero_division=0)
-recall_dep = recall_score(best_labels, all_preds, pos_label=1, zero_division=0)
-f1_dep = f1_score(best_labels, all_preds, pos_label=1, zero_division=0)
+accuracy = accuracy_score(best_labels, best_preds)
+precision_dep = precision_score(best_labels, best_preds, pos_label=1, zero_division=0)
+recall_dep = recall_score(best_labels, best_preds, pos_label=1, zero_division=0)
+f1_dep = f1_score(best_labels, best_preds, pos_label=1, zero_division=0)
 specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
 auc = best_val_auc
 
@@ -439,7 +373,6 @@ print(f"  Recall (Dep):       {recall_dep:.4f}")
 print(f"  F1-Score (Dep):     {f1_dep:.4f}")
 print(f"  Specificity:        {specificity:.4f}")
 
-# Save metrics
 metrics_v3 = {
     'model': 'Landmark-V3',
     'accuracy': float(accuracy),
@@ -456,19 +389,15 @@ with open(f"{results_dir}/v3_metrics.json", 'w') as f:
 
 pd.DataFrame([metrics_v3]).to_csv(f"{results_dir}/v3_metrics.csv", index=False)
 
-# -------------------
-# PLOT WITH COMPREHENSIVE METRICS
-# -------------------
+# Plot
 fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 
-# Confusion Matrix
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
            xticklabels=['Not Dep', 'Dep'], yticklabels=['Not Dep', 'Dep'], ax=axes[0,0])
 axes[0,0].set_title('V3: Confusion Matrix')
 axes[0,0].set_ylabel('True Label')
 axes[0,0].set_xlabel('Predicted Label')
 
-# Training curves
 axes[0,1].plot(history['train_acc'], label='Train', marker='o')
 axes[0,1].plot(history['val_acc'], label='Val', marker='s')
 axes[0,1].set_xlabel('Epoch')
@@ -477,14 +406,12 @@ axes[0,1].set_title('V3: Accuracy')
 axes[0,1].legend()
 axes[0,1].grid(alpha=0.3)
 
-# AUC curve
 axes[1,0].plot(history['val_auc'], marker='s', color='green')
 axes[1,0].set_xlabel('Epoch')
 axes[1,0].set_ylabel('AUC')
 axes[1,0].set_title('V3: Validation AUC')
 axes[1,0].grid(alpha=0.3)
 
-# Metrics summary
 metrics_plot = ['Accuracy', 'Precision', 'Recall', 'F1', 'Specificity', 'AUC']
 values_plot = [accuracy, precision_dep, recall_dep, f1_dep, specificity, auc]
 bars = axes[1,1].bar(metrics_plot, values_plot, color=['#3498db', '#e74c3c', '#e74c3c', '#e74c3c', '#2ecc71', '#9b59b6'])
@@ -504,6 +431,6 @@ plt.close()
 print(f"\n✓ Results saved to {results_dir}/")
 print(f"\n{'='*70}")
 print("V3 TRAINING COMPLETE!")
-print(f"Best Val Accuracy: {best_val_acc:.2f}%")
-print(f"Best Val AUC: {best_val_auc:.4f}")
+print(f"Best Validation AUC: {best_val_auc:.4f}")
+print(f"\n💡 MEMORY TIP: If you got OOM errors, edit line 36 and reduce batch_size to 24 or 16")
 print(f"{'='*70}\n")
