@@ -14,7 +14,6 @@ from sklearn.metrics import (
 from imblearn.over_sampling import SMOTE
 import json
 
-# Try to import tqdm, fallback to simple progress if not available
 try:
     from tqdm import tqdm
     TQDM_AVAILABLE = True

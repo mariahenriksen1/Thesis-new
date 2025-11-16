@@ -1,0 +1,17 @@
+{
+  "model": "AU-V3-Enhanced",
+  "accuracy": 0.6814924635532493,
+  "precision": 0.3482587064676617,
+  "recall": 0.11996572407883462,
+  "f1_score": 0.17845761631612492,
+  "auc": 0.5180848626582881,
+  "specificity": 0.9090277777777778,
+  "tp": 140,
+  "tn": 2618,
+  "fp": 262,
+  "fn": 1027,
+  "train_participants": 151,
+  "test_participants": 38,
+  "train_windows": 15818,
+  "test_windows": 4047
+}
