@@ -115,6 +115,16 @@ print(f"  Not Depressed: {len(df_participant_stats[df_participant_stats['PHQ8_Bi
 print(f"  Depressed: {len(df_participant_stats[df_participant_stats['PHQ8_Binary']==1])}")
 
 # -----------------------------
+# NEW STEP: NORMALIZE ACROSS PARTICIPANTS
+# -----------------------------
+au_mean_cols = [f"{au}_mean" for au in AU_COLUMNS]
+scaler = StandardScaler()
+
+df_participant_stats[au_mean_cols] = scaler.fit_transform(df_participant_stats[au_mean_cols])
+
+print("\n✓ Normalized AU means across participants.")
+
+# -----------------------------
 # ANALYSIS 1: AU CORRELATION WITH DEPRESSION (FRAME-LEVEL)
 # -----------------------------
 print("\n" + "="*70)
@@ -274,16 +284,27 @@ axes[1, 0].grid(axis='x', alpha=0.3)
 
 # Plot 4: Combined ranking (normalized scores)
 from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
 
+# Create aligned dataframes with AU as index
+corr_aligned = participant_corr_df['correlation'].abs()
+mi_aligned = mi_df.set_index('AU')['MI_Score']
+f_aligned = f_df.set_index('AU')['F_Score']
+
+# Normalize each metric
+scaler = MinMaxScaler()
+corr_norm = scaler.fit_transform(corr_aligned.values.reshape(-1, 1)).flatten()
+mi_norm = scaler.fit_transform(mi_aligned.values.reshape(-1, 1)).flatten()
+f_norm = scaler.fit_transform(f_aligned.values.reshape(-1, 1)).flatten()
+
+# Create combined scores DataFrame with proper alignment
 combined_scores = pd.DataFrame({
-    'AU': AU_COLUMNS,
-    'Correlation': scaler.fit_transform(participant_corr_df['correlation'].abs().values.reshape(-1, 1)).flatten(),
-    'MI_Score': scaler.fit_transform(mi_df['MI_Score'].values.reshape(-1, 1)).flatten(),
-    'F_Score': scaler.fit_transform(f_df['F_Score'].values.reshape(-1, 1)).flatten()
+    'AU': corr_aligned.index,
+    'Correlation': corr_norm,
+    'MI_Score': mi_norm,
+    'F_Score': f_norm
 })
 combined_scores['Combined'] = combined_scores[['Correlation', 'MI_Score', 'F_Score']].mean(axis=1)
-combined_scores = combined_scores.sort_values('Combined', ascending=False)
+combined_scores = combined_scores.sort_values('Combined', ascending=False).reset_index(drop=True)
 
 axes[1, 1].barh(combined_scores['AU'], combined_scores['Combined'], color='purple')
 axes[1, 1].set_xlabel('Combined Importance Score (Normalized)')
@@ -307,7 +328,7 @@ au_corr_matrix.index = AU_COLUMNS
 
 sns.heatmap(au_corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0,
             square=True, linewidths=0.5, cbar_kws={"shrink": 0.8}, ax=axes[0])
-axes[0].set_title('AU Inter-Correlations\n(Participant-Level Means)', fontsize=12, fontweight='bold')
+axes[0].set_title('Action Unit Correlation Matrix', fontsize=12, fontweight='bold')
 
 # Depression vs non-depression AU patterns
 depressed = df_participant_stats[df_participant_stats['PHQ8_Binary'] == 1][au_mean_cols].mean()
@@ -376,3 +397,4 @@ print(f"  → These AUs may require gender-specific modeling!")
 
 print(f"\n✓ All analysis complete! Results saved to {OUTPUT_DIR}/")
 print("="*70)
+
